@@ -98,6 +98,59 @@ If any tool is missing, check the summary at the end of the script output for qu
 
 ---
 
+## Troubleshooting: If `dnscan` or `Sublist3r` fail to run
+
+If you run into problems running `dnscan` or `Sublist3r` (missing modules, CRLF/shebang issues, DNS resolver errors, etc.), follow these steps in order. Each command includes a short explanation.
+
+> **Note:** prefer running `python3` explicitly and use a virtual environment to install Python libs if possible (see step 6).
+
+```bash
+# 1) Update package lists
+sudo apt update
+
+# 2) Install basic utilities (pip, venv helper and dos2unix for CRLF fix)
+sudo apt install -y python3-pip python3-venv dos2unix
+
+# 3) Install dnspython from the distro (resolves "No module named 'dns'")
+sudo apt install -y python3-dnspython
+
+# (Optional) Create a compatibility symlink if some scripts call `python` instead of `python3`.
+# Use only if you prefer calling `python` directly:
+sudo ln -s /usr/bin/python3 /usr/bin/python
+
+# 4) Fix Windows CRLF line endings in your scripts (very common if edited on Windows)
+# Run in your scripts directory:
+dos2unix *.sh
+
+# 5) Make sure scripts are executable and create the target output folder
+chmod +x ~/scripts/*.sh
+mkdir -p ~/scripts/target
+
+# 6) (Recommended) Create and use a virtual environment, then install Sublist3r requirements
+python3 -m venv ~/venvs/recon
+source ~/venvs/recon/bin/activate
+pip install --upgrade pip
+# If Sublist3r has a requirements.txt:
+pip install -r ~/tools/Sublist3r/requirements.txt
+# Run Sublist3r inside the venv:
+python ~/tools/Sublist3r/sublist3r.py -d example.com -v -o ~/scripts/target/domains.txt
+# Deactivate venv when done
+deactivate
+
+# 7) If a tool complains about DNS resolver (dnscan "No valid DNS resolver"), specify a public resolver:
+python3 ~/tools/dnscan/dnscan.py -d example.com \
+  -R 1.1.1.1
+
+# 8) Quick checks
+# Verify dnspython is importable by python3:
+python3 -c "import dns; print('dnspython OK', getattr(dns,'__version__','no-version'))"
+
+# Check current system resolver (useful if dnscan refuses system resolver)
+cat /etc/resolv.conf
+```
+
+---
+
 ## ⚠️ Notes
 
 * If any tool fails, it can be manually reinstalled using `go install` or `pipx install`.
