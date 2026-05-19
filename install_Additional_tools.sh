@@ -190,6 +190,31 @@ make
 sudo cp bin/massdns /usr/local/bin/
 
 # ==========================================
+# Configure massdns resolvers
+# ==========================================
+
+echo "[+] Configuring massdns resolvers..."
+
+# Copy default resolvers file
+cp lists/resolvers.txt "$TOOLS_DIR/massdns/resolvers.txt" 2>/dev/null || true
+
+# Create clean resolvers file
+cat > "$TOOLS_DIR/massdns/resolvers_clean.txt" << EOF
+1.1.1.1
+1.0.0.1
+8.8.8.8
+8.8.4.4
+9.9.9.9
+149.112.112.112
+208.67.222.222
+208.67.220.220
+EOF
+
+echo "[+] Clean resolvers saved to:"
+echo "$TOOLS_DIR/massdns/resolvers_clean.txt"
+
+
+# ==========================================
 # Install webscreenshot
 # ==========================================
 
